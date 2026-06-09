@@ -31,10 +31,18 @@ extern "C" {
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include <stdarg.h>
+#include <stdint.h>
+#include <string.h>
+#include <stdio.h>
+
+#include "middle_ringbuff.h"
+#include "middle_mqtt.h"
+
 #include "driver_uart_4g.h"
 #include "driver_a7680c.h"
+#include "driver_Ra_08.h"
 
-#include "middle_mqtt.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/

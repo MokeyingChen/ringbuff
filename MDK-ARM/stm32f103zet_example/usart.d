@@ -27,10 +27,13 @@ stm32f103zet_example\usart.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_
 stm32f103zet_example\usart.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_flash_ex.h
 stm32f103zet_example\usart.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pwr.h
 stm32f103zet_example\usart.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h
-stm32f103zet_example\usart.o: ../Hardware/driver_uart_4g.h
-stm32f103zet_example\usart.o: ../Core/Inc/main.h
 stm32f103zet_example\usart.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdarg.h
 stm32f103zet_example\usart.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
 stm32f103zet_example\usart.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
-stm32f103zet_example\usart.o: ../Hardware/driver_a7680c.h
+stm32f103zet_example\usart.o: ../Middle/middle_ringbuff.h
 stm32f103zet_example\usart.o: ../Middle/middle_mqtt.h
+stm32f103zet_example\usart.o: ../Hardware/driver_uart_4g.h
+stm32f103zet_example\usart.o: ../Hardware/driver_a7680c.h
+stm32f103zet_example\usart.o: ../Core/Inc/main.h
+stm32f103zet_example\usart.o: ../Hardware/driver_uart_4g.h
+stm32f103zet_example\usart.o: ../Hardware/driver_Ra_08.h

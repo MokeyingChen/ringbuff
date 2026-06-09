@@ -1,8 +1,176 @@
 #include "driver_a7680c.h"
-#include "main.h"
 
+/***********************************A7680C——uart************************************/
+
+uint8_t u2_databuf[U2_DMARx_Size];//要处理接收数据缓冲区
+uint8_t u2_TxBuffer[U2_Tx_Size];
+uint8_t u2_RxBuffer[U2_Rx_Size];//接收环形缓冲区
+uint8_t u2_DMA_RxBuffer[U2_DMARx_Size];//接收缓冲区
+uint8_t u2_ptfbuf[U2_ptf_Size];
+UCB_CB U2_RX_CB;//环形缓冲区结构体
+UCB_CB U2_TX_CB;//环形缓冲区结构体
+
+void U2_Init(void)
+{
+    U2Rx_Buff_Init();
+    U2Tx_Buff_Init();
+
+    HAL_UARTEx_ReceiveToIdle_DMA(&huart2, u2_DMA_RxBuffer, U2_DMARx_Size);
+    __HAL_DMA_DISABLE_IT(&hdma_usart2_rx, DMA_IT_HT);
+}
+
+ void U2Rx_Buff_Init(void)
+ {	
+    //memset(U2_CB.URxDataBufPtr,0,sizeof(U2_CB.URxDataBufPtr));  
+ 	U2_RX_CB.URxDataINPtr  = &U2_RX_CB.URxDataBufPtr[0];       
+ 	U2_RX_CB.URxDataOUTPtr =  U2_RX_CB.URxDataINPtr;             
+    U2_RX_CB.URxDataENDPtr = &U2_RX_CB.URxDataBufPtr[URxNum-1];  
+ 	U2_RX_CB.URxDataINPtr->startPtr = u2_RxBuffer;                     
+ 	U2_RX_CB.URxDataINPtr->endPtr = u2_RxBuffer;      
+    U2_RX_CB.URxDataINPtr->UCounter = 0;                                      
+ 	          
+ }          
+
+
+ void U2Tx_Buff_Init(void)
+ {	
+    //memset(U2_CB.UTxDataBufPtr,0,sizeof(U2_CB.UTxDataBufPtr)); 
+ 	U2_TX_CB.URxDataINPtr  = &U2_TX_CB.URxDataBufPtr[0];       
+ 	U2_TX_CB.URxDataOUTPtr =  U2_TX_CB.URxDataINPtr;             
+    U2_TX_CB.URxDataENDPtr = &U2_TX_CB.URxDataBufPtr[URxNum-1];  
+ 	U2_TX_CB.URxDataINPtr->startPtr = u2_TxBuffer;                   
+ 	U2_TX_CB.URxDataINPtr->endPtr = u2_TxBuffer;      
+    U2_TX_CB.URxDataINPtr->UCounter = 0;                                      
+ }
+
+void U2_Printf(char *format, ...)
+{
+	va_list arg;
+	va_start(arg, format);
+	vsprintf((char*)u2_ptfbuf, format, arg);
+	va_end(arg);
+	HAL_UART_Transmit(&huart2, u2_ptfbuf, strlen((const char*)u2_ptfbuf), HAL_MAX_DELAY);
+}
+
+void U2_TxData(uint8_t *data, uint16_t size)
+{
+    HAL_UART_Transmit(&huart2, data, size, HAL_MAX_DELAY);
+}
+
+
+void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
+{
+    if(huart == &huart2)
+    {
+         Command_WriteCclbuf(u2_DMA_RxBuffer,Size,&U2_RX_CB,u2_RxBuffer,U2_Rx_Size);
+         HAL_UARTEx_ReceiveToIdle_DMA(&huart2, u2_DMA_RxBuffer, U2_DMARx_Size);
+         __HAL_DMA_DISABLE_IT(&hdma_usart2_rx, DMA_IT_HT);
+
+    }
+}
+void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
+{
+    if(huart == &huart2)
+    {
+            HAL_UART_AbortReceive(&huart2);
+            HAL_UARTEx_ReceiveToIdle_DMA(&huart2, u2_DMA_RxBuffer, U2_DMARx_Size);
+            __HAL_DMA_DISABLE_IT(&hdma_usart2_rx, DMA_IT_HT);
+    }
+}
+
+
+/**
+* @brief 处理接收数据事件
+* @param data 接收数据指针
+* @param length 接收数据长度
+*/
+void U2_RxDataEvent(uint8_t *data, uint16_t length)
+{
+    static uint8_t error_count = 0;
+    // U2_Printf("本次接收%d字节数据\r\n",length);
+    // U2_TxData(data,length);
+    if(a7680c_flag == 1)
+    {
+    if (strstr((const char *)data, "{\"switch\":\"on\"}"))
+    {
+        memset(mqtt_data, 0, 256);
+        sprintf((char *)mqtt_data, "{\"services\":[{\"service_id\":\"Light\",\"properties\":{\"switch\":\"%s\"}}]}\r\n", "on");
+        memset(mqtt_data_req, 0, 256);
+        sprintf((char *)mqtt_data_req, "AT+CMQTTPUB=0,\"$oc/devices/6a20f775c00ccb6d4b598e66_myLight/sys/properties/report\",0,%d\r\n", strlen((char *)mqtt_data)-2);
+        a7680c_PropertyPost(mqtt_data_req);
+        a7680c_PropertyPost(mqtt_data);
+    }
+    else if (strstr((const char *)data, "{\"switch\":\"off\"}"))
+    {
+
+        memset(mqtt_data, 0, 256);
+        sprintf((char *)mqtt_data, "{\"services\":[{\"service_id\":\"Light\",\"properties\":{\"switch\":\"%s\"}}]}\r\n", "off");
+        memset(mqtt_data_req, 0, 256);
+        sprintf((char *)mqtt_data_req, "AT+CMQTTPUB=0,\"$oc/devices/6a20f775c00ccb6d4b598e66_myLight/sys/properties/report\",0,%d\r\n", strlen((char *)mqtt_data)-2);
+        a7680c_PropertyPost(mqtt_data_req);
+        a7680c_PropertyPost(mqtt_data);
+    }
+		else if (strstr((const char *)data, "ERROR")||strstr((const char *)data, "READY"))
+		{
+            error_count++;
+            if(error_count>=2)
+            {
+                error_count=0;
+                a7680c_flag = 0;
+            }
+		}
+    }
+    else if(a7680c_flag == 2)
+    {
+        if(strstr((const char *)data, "+CGEV: EPS PDN ACT 1"))
+        {
+            a7680c_flag = 0;
+            return;
+        }
+    }
+}
+
+/**
+* @brief 处理发送数据事件
+* @param data 发送数据指针
+* @param length 发送数据长度
+*/
+void U2_TxDataEvent(uint8_t *data, uint16_t length)
+{
+    // U2_Printf("本次发送%d字节数据\r\n",length);
+    // U2_TxData(data,length);
+    U2_TxData(data, length);
+    
+}
+
+/**
+* @brief 处理接收发送数据任务
+* @param None
+* @return None
+*/
+void U2_Receiving_processing(void)
+{
+    static uint32_t rx_tick = 0;
+	static uint32_t tx_tick = 0;
+
+    if(HAL_GetTick()-rx_tick>=500)
+    {
+        
+         U_ProcessCclbuf(&U2_RX_CB,u2_RxBuffer,U2_Rx_Size,u2_databuf,U2_DMARx_Size,U2_RxDataEvent);
+         rx_tick=HAL_GetTick();
+    }
+		if(HAL_GetTick()-tx_tick>=2000)
+    {
+        
+         U_ProcessCclbuf(&U2_TX_CB,u2_TxBuffer,U2_Tx_Size,u2_databuf,U2_DMARx_Size,U2_TxDataEvent);
+         tx_tick=HAL_GetTick();
+    }
+   
+}
+
+
+/************************************A7680C——app************************************/
 volatile uint8_t a7680c_flag = 0;
-
 char mqtt_data[256];
 char mqtt_data_req[256];
 

@@ -1,6 +1,5 @@
 stm32f103zet_example\driver_a7680c.o: ..\Hardware\driver_a7680c.c
 stm32f103zet_example\driver_a7680c.o: ..\Hardware\driver_a7680c.h
-stm32f103zet_example\driver_a7680c.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
 stm32f103zet_example\driver_a7680c.o: ../Core/Inc/main.h
 stm32f103zet_example\driver_a7680c.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h
 stm32f103zet_example\driver_a7680c.o: ../Core/Inc/stm32f1xx_hal_conf.h
@@ -9,6 +8,7 @@ stm32f103zet_example\driver_a7680c.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f
 stm32f103zet_example\driver_a7680c.o: ../Drivers/CMSIS/Device/ST/STM32F1xx/Include/stm32f1xx.h
 stm32f103zet_example\driver_a7680c.o: ../Drivers/CMSIS/Device/ST/STM32F1xx/Include/stm32f103xe.h
 stm32f103zet_example\driver_a7680c.o: ../Drivers/CMSIS/Include/core_cm3.h
+stm32f103zet_example\driver_a7680c.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
 stm32f103zet_example\driver_a7680c.o: ../Drivers/CMSIS/Include/cmsis_version.h
 stm32f103zet_example\driver_a7680c.o: ../Drivers/CMSIS/Include/cmsis_compiler.h
 stm32f103zet_example\driver_a7680c.o: ../Drivers/CMSIS/Include/cmsis_armcc.h
@@ -27,9 +27,12 @@ stm32f103zet_example\driver_a7680c.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f
 stm32f103zet_example\driver_a7680c.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_flash_ex.h
 stm32f103zet_example\driver_a7680c.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pwr.h
 stm32f103zet_example\driver_a7680c.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h
-stm32f103zet_example\driver_a7680c.o: ../Hardware/driver_uart_4g.h
-stm32f103zet_example\driver_a7680c.o: ../Core/Inc/main.h
 stm32f103zet_example\driver_a7680c.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdarg.h
 stm32f103zet_example\driver_a7680c.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
 stm32f103zet_example\driver_a7680c.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
+stm32f103zet_example\driver_a7680c.o: ../Middle/middle_ringbuff.h
 stm32f103zet_example\driver_a7680c.o: ../Middle/middle_mqtt.h
+stm32f103zet_example\driver_a7680c.o: ../Hardware/driver_uart_4g.h
+stm32f103zet_example\driver_a7680c.o: ../Hardware/driver_a7680c.h
+stm32f103zet_example\driver_a7680c.o: ../Hardware/driver_Ra_08.h
+stm32f103zet_example\driver_a7680c.o: ..\Hardware\driver_uart_4g.h
