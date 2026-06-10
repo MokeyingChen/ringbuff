@@ -3,18 +3,18 @@
         {
             "name": "stm32f103zet_example",
             "includePath": [
-                "c:\\Users\\info\\Desktop\\STM32\\STM32F10\\stm32f103zet_example\\Core\\Inc",
-                "c:\\Users\\info\\Desktop\\STM32\\STM32F10\\stm32f103zet_example\\Drivers\\STM32F1xx_HAL_Driver\\Inc",
-                "c:\\Users\\info\\Desktop\\STM32\\STM32F10\\stm32f103zet_example\\Drivers\\STM32F1xx_HAL_Driver\\Inc\\Legacy",
-                "c:\\Users\\info\\Desktop\\STM32\\STM32F10\\stm32f103zet_example\\Drivers\\CMSIS\\Device\\ST\\STM32F1xx\\Include",
-                "c:\\Users\\info\\Desktop\\STM32\\STM32F10\\stm32f103zet_example\\Drivers\\CMSIS\\Include",
-                "c:\\Users\\info\\Desktop\\STM32\\STM32F10\\stm32f103zet_example\\Hardware",
-                "c:\\Users\\info\\Desktop\\STM32\\STM32F10\\stm32f103zet_example\\Middle",
+                "c:\\Users\\info\\Desktop\\MCU\\STM32\\STM32F10\\IT\\stm32f103zet_example\\Core\\Inc",
+                "c:\\Users\\info\\Desktop\\MCU\\STM32\\STM32F10\\IT\\stm32f103zet_example\\Drivers\\STM32F1xx_HAL_Driver\\Inc",
+                "c:\\Users\\info\\Desktop\\MCU\\STM32\\STM32F10\\IT\\stm32f103zet_example\\Drivers\\STM32F1xx_HAL_Driver\\Inc\\Legacy",
+                "c:\\Users\\info\\Desktop\\MCU\\STM32\\STM32F10\\IT\\stm32f103zet_example\\Drivers\\CMSIS\\Device\\ST\\STM32F1xx\\Include",
+                "c:\\Users\\info\\Desktop\\MCU\\STM32\\STM32F10\\IT\\stm32f103zet_example\\Drivers\\CMSIS\\Include",
+                "c:\\Users\\info\\Desktop\\MCU\\STM32\\STM32F10\\IT\\stm32f103zet_example\\Hardware",
+                "c:\\Users\\info\\Desktop\\MCU\\STM32\\STM32F10\\IT\\stm32f103zet_example\\Middle",
                 "C:\\Keil_v5\\ARM\\ARMCC\\include",
                 "C:\\Keil_v5\\ARM\\ARMCC\\include\\rw",
-                "c:\\Users\\info\\Desktop\\STM32\\STM32F10\\stm32f103zet_example\\MDK-ARM",
-                "c:\\Users\\info\\Desktop\\STM32\\STM32F10\\stm32f103zet_example\\Core\\Src",
-                "c:\\Users\\info\\Desktop\\STM32\\STM32F10\\stm32f103zet_example\\Drivers\\STM32F1xx_HAL_Driver\\Src"
+                "c:\\Users\\info\\Desktop\\MCU\\STM32\\STM32F10\\IT\\stm32f103zet_example\\MDK-ARM",
+                "c:\\Users\\info\\Desktop\\MCU\\STM32\\STM32F10\\IT\\stm32f103zet_example\\Core\\Src",
+                "c:\\Users\\info\\Desktop\\MCU\\STM32\\STM32F10\\IT\\stm32f103zet_example\\Drivers\\STM32F1xx_HAL_Driver\\Src"
             ],
             "defines": [
                 "USE_HAL_DRIVER",

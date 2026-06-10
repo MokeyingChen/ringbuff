@@ -31,8 +31,6 @@ stm32f103zet_example\stm32f1xx_hal_msp.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\st
 stm32f103zet_example\stm32f1xx_hal_msp.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
 stm32f103zet_example\stm32f1xx_hal_msp.o: ../Middle/middle_ringbuff.h
 stm32f103zet_example\stm32f1xx_hal_msp.o: ../Middle/middle_mqtt.h
-stm32f103zet_example\stm32f1xx_hal_msp.o: ../Hardware/driver_uart_4g.h
 stm32f103zet_example\stm32f1xx_hal_msp.o: ../Hardware/driver_a7680c.h
 stm32f103zet_example\stm32f1xx_hal_msp.o: ../Core/Inc/main.h
-stm32f103zet_example\stm32f1xx_hal_msp.o: ../Hardware/driver_uart_4g.h
 stm32f103zet_example\stm32f1xx_hal_msp.o: ../Hardware/driver_Ra_08.h

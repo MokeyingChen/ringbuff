@@ -2,7 +2,7 @@
 #define __DRIVER_A7680C_H__
 
 #include "main.h"
-#include "driver_uart_4g.h"
+#include "middle_ringbuff.h"
 
 /***********************************A7680C——uart************************************/
 

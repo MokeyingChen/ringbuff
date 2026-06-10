@@ -39,7 +39,6 @@ extern "C" {
 #include "middle_ringbuff.h"
 #include "middle_mqtt.h"
 
-#include "driver_uart_4g.h"
 #include "driver_a7680c.h"
 #include "driver_Ra_08.h"
 
