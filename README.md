@@ -1,8 +1,5 @@
 # RingBuff — 嵌入式环形缓冲区库
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Platform](https://img.shields.io/badge/Platform-Any%20MCU-blue)]()
-
 一个轻量级、可移植的嵌入式环形缓冲区（Ring Buffer）C 语言库。**仅依赖 `stdint.h` 和 `string.h`**，适用于任何 MCU 平台（STM32、GD32、ESP32、AVR 等）。
 
 ## 特性
