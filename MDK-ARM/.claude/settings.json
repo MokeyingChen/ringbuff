@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cp -r \"c:/Users/info/.claude/projects/c--Users-info-Desktop-STM32-STM32F10-stm32f103zet-example-MDK-ARM/\"* \"c:/Users/info/.claude/projects/c--Users-info-Desktop-MCU-STM32-STM32F10-IT-stm32f103zet-example-MDK-ARM/\")"
+    ]
+  }
+}

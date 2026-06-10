@@ -1,5 +1,24 @@
 #include "middle_ringbuff.h"
 
+void RingBuff_Init(RingBuff_CB *rb, uint8_t *buffer, uint16_t bufSize,
+                   RingBuff_Slot *slotArray, uint16_t slotNum)
+{
+    memset(slotArray, 0, sizeof(RingBuff_Slot) * slotNum);
+    memset(rb, 0, sizeof(RingBuff_CB));
+
+    rb->buffer = buffer;
+    rb->bufSize = bufSize;
+    rb->slot = slotArray;
+    rb->slotNum = slotNum;
+
+    rb->in = &slotArray[0];
+    rb->out = &slotArray[0];
+    rb->end = &slotArray[slotNum - 1];
+
+    rb->in->startPtr = buffer;
+    rb->in->endPtr = buffer;
+    rb->in->count = 0;
+}
 
 /**
 * @brief 计算接收缓冲区未处理的数据长度
@@ -8,10 +27,15 @@
 * @param bufsize 环形缓冲区大小
 * @return 未处理的数据长度
 */
-uint16_t Command_GetRxLength(UCB_CB *pUcb,uint8_t *u_RxBuffer,uint16_t bufsize) {
-    return ((pUcb->URxDataINPtr->startPtr-u_RxBuffer) +bufsize- (pUcb->URxDataOUTPtr->startPtr-u_RxBuffer)) % bufsize;
+uint16_t RingBuff_GetLength(RingBuff_CB *rb)
+{
+    uint16_t in = rb->in->startPtr - rb->buffer;
+    uint16_t out = rb->out->startPtr - rb->buffer;
+    if (in >= out)
+        return in - out;
+    else
+        return rb->bufSize - out + in;
 }
-
 
 /**
 * @brief 计算接收缓冲区剩余空间
@@ -23,8 +47,8 @@ uint16_t Command_GetRxLength(UCB_CB *pUcb,uint8_t *u_RxBuffer,uint16_t bufsize) 
 * @retval 1~bufsize-1 剩余空间
 * @retval bufsize 环形缓冲区为空
 */
-uint16_t Command_GetRxRemain(UCB_CB *pUcb,uint8_t *u_RxBuffer,uint16_t bufsize) {
-    return bufsize - Command_GetRxLength(pUcb,u_RxBuffer,bufsize);
+uint16_t RingBuff_GetRemain(RingBuff_CB *rb) {
+    return rb->bufSize - RingBuff_GetLength(rb);
 }
 
 /**
@@ -36,86 +60,86 @@ uint16_t Command_GetRxRemain(UCB_CB *pUcb,uint8_t *u_RxBuffer,uint16_t bufsize) 
 * @param bufsize 环形缓冲区大小
 * @return 写入的数据长度
 */
-uint16_t Command_WriteCclbuf(uint8_t *data, uint16_t length,UCB_CB *pUcb,uint8_t *u_RxBuffer,uint16_t bufsize) {
+uint16_t RingBuff_Write(RingBuff_CB *rb,uint8_t *data, uint16_t length) {
     // 如果缓冲区不足 则不写入数据 返回0
-    if (Command_GetRxRemain(pUcb,u_RxBuffer,bufsize) < length) {
-        //U1_Printf("u1RXbuff no space\r\n");
+    if (RingBuff_GetRemain(rb) < length) {
+        //U1_Printf("RingBuff no space\r\n");
         return 0;
     }
-    pUcb->URxDataINPtr->UCounter = length;
+    rb->in->count = length;
     
     // 使用memcpy函数将数据写入缓冲区
-    if ((pUcb->URxDataINPtr->startPtr-u_RxBuffer) + length < bufsize) {
-        memcpy(pUcb->URxDataINPtr->startPtr, data, length);
-        uint8_t *startPtr=pUcb->URxDataINPtr->startPtr+length;
-        pUcb->URxDataINPtr->endPtr = startPtr - 1;
-        pUcb->URxDataINPtr++;
-        if(pUcb->URxDataINPtr == pUcb->URxDataENDPtr)
+    if ((rb->in->startPtr - rb->buffer) + length < rb->bufSize) {
+        memcpy(rb->in->startPtr, data, length);
+        uint8_t *startPtr=rb->in->startPtr+length;
+        rb->in->endPtr = startPtr - 1;
+        rb->in++;
+        if(rb->in == rb->end)
         {
-            pUcb->URxDataINPtr = pUcb->URxDataBufPtr;
+            rb->in = rb->slot;
         }
-        pUcb->URxDataINPtr->startPtr = startPtr;
+        rb->in->startPtr = startPtr;
 
     } else {
-        uint16_t firstLength = bufsize - (pUcb->URxDataINPtr->startPtr-u_RxBuffer);
-        memcpy(pUcb->URxDataINPtr->startPtr, data, firstLength);
-        memcpy(u_RxBuffer, data + firstLength, length - firstLength);
-         uint8_t *startPtr = &u_RxBuffer[length - firstLength];
+        uint16_t firstLength = rb->bufSize - (rb->in->startPtr - rb->buffer);
+        memcpy(rb->in->startPtr, data, firstLength);
+        memcpy(rb->buffer, data + firstLength, length - firstLength);
+         uint8_t *startPtr = &rb->buffer[length - firstLength];
          if(length - firstLength==0)
          {
-             pUcb->URxDataINPtr->endPtr = &u_RxBuffer[bufsize-1];
+             rb->in->endPtr = &rb->buffer[rb->bufSize-1];
          }else{
-             pUcb->URxDataINPtr->endPtr = startPtr - 1;
+             rb->in->endPtr = startPtr - 1;
          }
-          pUcb->URxDataINPtr++;
-        if(pUcb->URxDataINPtr == pUcb->URxDataENDPtr)
+          rb->in++;
+        if(rb->in == rb->end)
         {
-            pUcb->URxDataINPtr = pUcb->URxDataBufPtr;
+            rb->in = rb->slot;
         }
-        pUcb->URxDataINPtr->startPtr = startPtr;
+        rb->in->startPtr = startPtr;
     }
     return length;
 }
 
+/**
+* @brief 从接收环形缓冲区读取数据
+* @param rb 接收环形缓冲区指针
+* @param dst 读取数据指针
+* @param maxLen 读取数据最大长度
+* @return 读取的数据长度
+*/
+uint16_t RingBuff_Read(RingBuff_CB *rb, uint8_t *dst, uint16_t maxLen)
+{
+    if (rb->in == rb->out) return 0;
 
+    uint16_t len = rb->out->count;
+    if (len > maxLen) len = maxLen;
+
+    uint16_t offset = rb->out->startPtr - rb->buffer;
+    uint16_t first  = rb->bufSize - offset;
+
+    if (len <= first) {
+        memcpy(dst, rb->out->startPtr, len);
+    } else {
+        memcpy(dst, rb->out->startPtr, first);
+        memcpy(dst + first, rb->buffer, len - first);
+    }
+
+    rb->out->startPtr = rb->buffer + (offset + len) % rb->bufSize;
+    rb->out++;
+    if (rb->out == rb->end) rb->out = rb->slot;
+    return len;
+}
 
 /**
 * @brief 处理接收数据事件
-* @param pUcb UCB_CB结构体指针
-* @param u_RxBuffer 接收环形缓冲区指针
-* @param rxbufsize 接收环形缓冲区大小
-* @param u_databuf 接收数据指针
-* @param databuf_Size 接收数据缓冲区大小
-* @param DataEvent 数据事件函数指针
+* @param rb 接收环形缓冲区指针
+* @param buf 接收数据指针
+* @param size 接收数据缓冲区大小
+* @param callback 数据事件函数回调
 */
-void U_ProcessCclbuf(UCB_CB *pUcb,uint8_t *u_RxBuffer,uint16_t rxbufsize,uint8_t *u_databuf,uint16_t databuf_Size,U_DataEvent_t DataEvent)
+void RingBuff_Process(RingBuff_CB *rb, uint8_t *buf, uint16_t size, RingBuff_Event_t callback)
 {
-        if(pUcb->URxDataINPtr != pUcb->URxDataOUTPtr)
-        {
-            memset(u_databuf,0,databuf_Size);
-            //if(pUcb->URxDataOUTPtr->endPtr-)
-             for(uint16_t i=0;i<pUcb->URxDataOUTPtr->UCounter;i++)
-             {
-                 if (pUcb->URxDataOUTPtr->startPtr-u_RxBuffer+i<rxbufsize){
-                     u_databuf[i]=pUcb->URxDataOUTPtr->startPtr[i];
-                     //U1_Printf("%02x ",pUcb->URxDataOUTPtr->startPtr[i]);                
-                 }else{
-                     u_databuf[i]=pUcb->URxDataOUTPtr->startPtr[i-rxbufsize];
-                     //U1_Printf("%02x ",pUcb->URxDataOUTPtr->startPtr[i-rxbufsize]);
-                 }              
-             }
-            //U1_Printf("%s",u_databuf);
-            //U1_Printf("\r\n\r\n");
-
-            DataEvent(u_databuf,pUcb->URxDataOUTPtr->UCounter);//处理数据
-
-            pUcb->URxDataOUTPtr++;
-           if(pUcb->URxDataOUTPtr == pUcb->URxDataENDPtr)
-          {
-            pUcb->URxDataOUTPtr = pUcb->URxDataBufPtr;
-          }
-        }
+    uint16_t len = RingBuff_Read(rb, buf, size);
+    if (len > 0) callback(buf, len);
 }
-
-
-

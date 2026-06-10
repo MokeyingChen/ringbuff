@@ -1,14 +1,18 @@
 #include "driver_a7680c.h"
 
+#if A7680C_ENABLE
 /***********************************A7680C——uart************************************/
+RingBuff_Slot rxSlots[15];  // RX 
+RingBuff_Slot txSlots[10];   // TX 
+RingBuff_CB U2_RX_CB;//环形缓冲区结构体
+RingBuff_CB U2_TX_CB;//环形缓冲区结构体
 
 uint8_t u2_databuf[U2_DMARx_Size];//要处理接收数据缓冲区
 uint8_t u2_TxBuffer[U2_Tx_Size];
 uint8_t u2_RxBuffer[U2_Rx_Size];//接收环形缓冲区
 uint8_t u2_DMA_RxBuffer[U2_DMARx_Size];//接收缓冲区
 uint8_t u2_ptfbuf[U2_ptf_Size];
-UCB_CB U2_RX_CB;//环形缓冲区结构体
-UCB_CB U2_TX_CB;//环形缓冲区结构体
+
 
 void U2_Init(void)
 {
@@ -20,28 +24,14 @@ void U2_Init(void)
 }
 
  void U2Rx_Buff_Init(void)
- {	
-    //memset(U2_CB.URxDataBufPtr,0,sizeof(U2_CB.URxDataBufPtr));  
- 	U2_RX_CB.URxDataINPtr  = &U2_RX_CB.URxDataBufPtr[0];       
- 	U2_RX_CB.URxDataOUTPtr =  U2_RX_CB.URxDataINPtr;             
-    U2_RX_CB.URxDataENDPtr = &U2_RX_CB.URxDataBufPtr[URxNum-1];  
- 	U2_RX_CB.URxDataINPtr->startPtr = u2_RxBuffer;                     
- 	U2_RX_CB.URxDataINPtr->endPtr = u2_RxBuffer;      
-    U2_RX_CB.URxDataINPtr->UCounter = 0;                                      
- 	          
- }          
+{
+    RingBuff_Init(&U2_RX_CB, u2_RxBuffer, U2_Rx_Size, rxSlots, 15);
+}
 
-
- void U2Tx_Buff_Init(void)
- {	
-    //memset(U2_CB.UTxDataBufPtr,0,sizeof(U2_CB.UTxDataBufPtr)); 
- 	U2_TX_CB.URxDataINPtr  = &U2_TX_CB.URxDataBufPtr[0];       
- 	U2_TX_CB.URxDataOUTPtr =  U2_TX_CB.URxDataINPtr;             
-    U2_TX_CB.URxDataENDPtr = &U2_TX_CB.URxDataBufPtr[URxNum-1];  
- 	U2_TX_CB.URxDataINPtr->startPtr = u2_TxBuffer;                   
- 	U2_TX_CB.URxDataINPtr->endPtr = u2_TxBuffer;      
-    U2_TX_CB.URxDataINPtr->UCounter = 0;                                      
- }
+void U2Tx_Buff_Init(void)
+{
+    RingBuff_Init(&U2_TX_CB, u2_TxBuffer, U2_Tx_Size, txSlots, 10);
+}
 
 void U2_Printf(char *format, ...)
 {
@@ -62,7 +52,7 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
 {
     if(huart == &huart2)
     {
-         Command_WriteCclbuf(u2_DMA_RxBuffer,Size,&U2_RX_CB,u2_RxBuffer,U2_Rx_Size);
+         RingBuff_Write(&U2_RX_CB,u2_DMA_RxBuffer,Size);
          HAL_UARTEx_ReceiveToIdle_DMA(&huart2, u2_DMA_RxBuffer, U2_DMARx_Size);
          __HAL_DMA_DISABLE_IT(&hdma_usart2_rx, DMA_IT_HT);
 
@@ -137,10 +127,16 @@ void U2_RxDataEvent(uint8_t *data, uint16_t length)
 */
 void U2_TxDataEvent(uint8_t *data, uint16_t length)
 {
-    // U2_Printf("本次发送%d字节数据\r\n",length);
+     //U2_Printf("本次发送%d字节数据\r\n",length);
     // U2_TxData(data,length);
     U2_TxData(data, length);
     
+}
+
+void U2_RxText_CallBack(uint8_t *data, uint16_t length)
+{
+     U2_Printf("本次接收%d字节数据\r\n",length);
+     U2_TxData(data,length);
 }
 
 /**
@@ -156,13 +152,13 @@ void U2_Receiving_processing(void)
     if(HAL_GetTick()-rx_tick>=500)
     {
         
-         U_ProcessCclbuf(&U2_RX_CB,u2_RxBuffer,U2_Rx_Size,u2_databuf,U2_DMARx_Size,U2_RxDataEvent);
+         RingBuff_Process(&U2_RX_CB,u2_databuf,U2_DMARx_Size,U2_RxDataEvent);
          rx_tick=HAL_GetTick();
     }
 		if(HAL_GetTick()-tx_tick>=2000)
     {
         
-         U_ProcessCclbuf(&U2_TX_CB,u2_TxBuffer,U2_Tx_Size,u2_databuf,U2_DMARx_Size,U2_TxDataEvent);
+         RingBuff_Process(&U2_TX_CB,u2_databuf,U2_DMARx_Size,U2_TxDataEvent);
          tx_tick=HAL_GetTick();
     }
    
@@ -423,7 +419,7 @@ uint8_t a7680c_Connect_IoTServer(void)
 	U2Rx_Buff_Init();
 	U2Tx_Buff_Init();
 
-	U2_RX_CB.URxDataOUTPtr = U2_RX_CB.URxDataENDPtr - 1;
+	//U2_RX_CB.out = U2_RX_CB.end - 1;
 
 	// MQTT_ConectPack();
 	return 0;
@@ -438,7 +434,7 @@ void a7680c_PropertyPost(char * postdata)
 {
     memset(u2_ptfbuf, 0, U2_ptf_Size);
 	strcpy((char *)u2_ptfbuf,postdata);
-	Command_WriteCclbuf(u2_ptfbuf,strlen((char *)u2_ptfbuf),&U2_TX_CB,u2_TxBuffer,U2_Tx_Size);
+	RingBuff_Write(&U2_TX_CB,u2_ptfbuf,strlen((char *)u2_ptfbuf));
 }
 
 /**
@@ -541,3 +537,8 @@ void a7680c_Task(void)
 	a7680c_Report();
 	a7680c_reconnect();
 }
+
+
+
+#endif /* A7680C_ENABLE */
+

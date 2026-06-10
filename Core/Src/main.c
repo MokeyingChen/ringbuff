@@ -93,7 +93,10 @@ int main(void)
   MX_USART3_UART_Init();
   /* USER CODE BEGIN 2 */
 
-  a7680c_Init();
+#if A7680C_ENABLE
+  //a7680c_Init();
+  U2_Init();
+#endif
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -119,7 +122,11 @@ int main(void)
     if (now - last_100ms >= 100)
     {
         last_100ms = now;
-        a7680c_Task();
+        
+#if A7680C_ENABLE
+        //a7680c_Task();
+        RingBuff_Process(&U2_RX_CB,u2_databuf,U2_DMARx_Size,U2_RxText_CallBack);
+#endif
     }
   }
   /* USER CODE END 3 */

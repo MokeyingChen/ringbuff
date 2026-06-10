@@ -34,3 +34,4 @@ stm32f103zet_example\driver_ra_08.o: ../Middle/middle_ringbuff.h
 stm32f103zet_example\driver_ra_08.o: ../Middle/middle_mqtt.h
 stm32f103zet_example\driver_ra_08.o: ../Hardware/driver_a7680c.h
 stm32f103zet_example\driver_ra_08.o: ../Core/Inc/main.h
+stm32f103zet_example\driver_ra_08.o: ../Hardware/driver_Ra_08.h

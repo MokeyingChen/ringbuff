@@ -2,6 +2,7 @@
 #define __MIDDLE_MQTT_H__
 
 #include <stdint.h>
+#include "middle_ringbuff.h"
 
 #define MQTT_CONNECT_OK 0x00000001
 #define PassWord "version=2018-10-31&res=products%2FN6aM3jN64d%2Fdevices%2FZ001&et=1919945104&method=md5&sign=2op5PPeAS4rnloQiPWF7qQ%3D%3D"
@@ -42,16 +43,16 @@ extern uint8_t PING_FLAG;
 
 void Iot_Init(void);
 
-void MQTT_ConectPack(MQTT_CB *mqtt, IOT_InfoCB *iot_info);
-void MQTT_SubcribPack(char *Topic,MQTT_CB *mqtt);
+void MQTT_ConectPack(MQTT_CB *mqtt, IOT_InfoCB *iot_info,RingBuff_CB *rb);
+void MQTT_SubcribPack(char *Topic,MQTT_CB *mqtt,RingBuff_CB *rb);
 void MQTT_DealPublishData(uint8_t *data, uint16_t length,MQTT_CB *mqtt);
 
-void MQTT_PublishDataQs0(char *Topic,char *data,uint16_t length,MQTT_CB *mqtt);
-void MQTT_PublishDataQs1(char *Topic,char *data,uint16_t length,MQTT_CB *mqtt);
+void MQTT_PublishDataQs0(char *Topic,char *data,uint16_t length,MQTT_CB *mqtt,RingBuff_CB *rb);
+void MQTT_PublishDataQs1(char *Topic,char *data,uint16_t length,MQTT_CB *mqtt,RingBuff_CB *rb);
 
-void MQTT_PingREQ(void);
+void MQTT_PingREQ(RingBuff_CB *rb);
 
-void WiFi_PropertyPost(char * postdata,MQTT_CB *mqtt,IOT_InfoCB *iot_info);
+void WiFi_PropertyPost(char * postdata,MQTT_CB *mqtt,IOT_InfoCB *iot_info,RingBuff_CB *rb);
 
 
 #endif

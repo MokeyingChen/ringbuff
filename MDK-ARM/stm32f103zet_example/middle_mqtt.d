@@ -1,6 +1,8 @@
 stm32f103zet_example\middle_mqtt.o: ..\Middle\middle_mqtt.c
 stm32f103zet_example\middle_mqtt.o: ..\Middle\middle_mqtt.h
 stm32f103zet_example\middle_mqtt.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
+stm32f103zet_example\middle_mqtt.o: ..\Middle\middle_ringbuff.h
+stm32f103zet_example\middle_mqtt.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
 stm32f103zet_example\middle_mqtt.o: ../Core/Inc/main.h
 stm32f103zet_example\middle_mqtt.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h
 stm32f103zet_example\middle_mqtt.o: ../Core/Inc/stm32f1xx_hal_conf.h
@@ -28,9 +30,7 @@ stm32f103zet_example\middle_mqtt.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1x
 stm32f103zet_example\middle_mqtt.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pwr.h
 stm32f103zet_example\middle_mqtt.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h
 stm32f103zet_example\middle_mqtt.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdarg.h
-stm32f103zet_example\middle_mqtt.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
 stm32f103zet_example\middle_mqtt.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
-stm32f103zet_example\middle_mqtt.o: ../Middle/middle_ringbuff.h
 stm32f103zet_example\middle_mqtt.o: ../Hardware/driver_a7680c.h
 stm32f103zet_example\middle_mqtt.o: ../Core/Inc/main.h
 stm32f103zet_example\middle_mqtt.o: ../Hardware/driver_Ra_08.h

@@ -22,7 +22,7 @@ void Iot_Init(void)
 /*参  数：无                                                */
 /*返回值：无                                                */
 /*----------------------------------------------------------*/
-void MQTT_ConectPack(MQTT_CB *mqtt, IOT_InfoCB *iot_info)
+void MQTT_ConectPack(MQTT_CB *mqtt, IOT_InfoCB *iot_info,RingBuff_CB *rb)
 {	
 	mqtt->Message_ID = 1;  //报文标识符清零，CONNECT报文虽然不需要添加报文标识符，但是CONNECT报文是第一个发送的报文，在此清零报文标识符，为后续报文做准备
 	mqtt->Fixed_len = 1;                                                                                                        //CONNECT报文，固定报头长度暂定为1
@@ -65,14 +65,14 @@ void MQTT_ConectPack(MQTT_CB *mqtt, IOT_InfoCB *iot_info)
 	mqtt->Pack_buff[mqtt->Fixed_len+15+strlen(iot_info->IOT_ClientID)+strlen(iot_info->IOT_ProductID)] = strlen((char *)PassWord)%256;	                        //密码长度低字节
 	memcpy(&mqtt->Pack_buff[mqtt->Fixed_len+16+strlen(iot_info->IOT_ClientID)+strlen(iot_info->IOT_ProductID)],(char *)PassWord,strlen((char *)PassWord));   //复制过来密码字串
    
-    Command_WriteCclbuf(mqtt->Pack_buff, mqtt->Fixed_len + mqtt->Variable_len + mqtt->Payload_len,&U2_TX_CB, u2_TxBuffer, U2_Tx_Size); //发送CONNECT报文
+    RingBuff_Write(rb,mqtt->Pack_buff, mqtt->Fixed_len + mqtt->Variable_len + mqtt->Payload_len); //发送CONNECT报文
 }
 /**
  * @brief 订阅主题
  * 
  * @param Topic 主题字符串
  */
-void MQTT_SubcribPack(char *Topic,MQTT_CB *mqtt)
+void MQTT_SubcribPack(char *Topic,MQTT_CB *mqtt,RingBuff_CB *rb)
 {
 	//mqtt->Message_ID = 1;
 	mqtt->Fixed_len = 1;                                                                                                        //CONNECT报文，固定报头长度暂定为1
@@ -100,7 +100,7 @@ void MQTT_SubcribPack(char *Topic,MQTT_CB *mqtt)
 	memcpy(&mqtt->Pack_buff[mqtt->Fixed_len+4],Topic,strlen(Topic));
 	mqtt->Pack_buff[mqtt->Fixed_len+4+strlen(Topic)]=0x00;  
 	
-	Command_WriteCclbuf(mqtt->Pack_buff, mqtt->Fixed_len + mqtt->Variable_len + mqtt->Payload_len,&U2_TX_CB, u2_TxBuffer, U2_Tx_Size); //发送SUBSCRIBE报文
+	RingBuff_Write(rb,mqtt->Pack_buff, mqtt->Fixed_len + mqtt->Variable_len + mqtt->Payload_len); //发送SUBSCRIBE报文
 }
 /**
  * @brief 处理发布数据事件
@@ -125,7 +125,7 @@ void MQTT_DealPublishData(uint8_t *data, uint16_t length,MQTT_CB *mqtt)
  * @param Topic 主题字符串
  * @param data 数据指针
  */
-void MQTT_PublishDataQs0(char *Topic,char *data,uint16_t length,MQTT_CB *mqtt)
+void MQTT_PublishDataQs0(char *Topic,char *data,uint16_t length,MQTT_CB *mqtt,RingBuff_CB *rb)
 {
 	mqtt->Fixed_len = 1;                                                                                                        //CONNECT报文，固定报头长度暂定为1
 	mqtt->Variable_len = 2+strlen(Topic);                                                                                                    //CONNECT报文，可变报头长度=10
@@ -149,7 +149,7 @@ void MQTT_PublishDataQs0(char *Topic,char *data,uint16_t length,MQTT_CB *mqtt)
            	            
 	memcpy(&mqtt->Pack_buff[mqtt->Fixed_len+2+strlen(Topic)],data,length);
 	
-	Command_WriteCclbuf(mqtt->Pack_buff, mqtt->Fixed_len + mqtt->Variable_len + mqtt->Payload_len,&U2_TX_CB, u2_TxBuffer, U2_Tx_Size);
+	RingBuff_Write(rb,mqtt->Pack_buff, mqtt->Fixed_len + mqtt->Variable_len + mqtt->Payload_len);
 
 }
 
@@ -159,7 +159,7 @@ void MQTT_PublishDataQs0(char *Topic,char *data,uint16_t length,MQTT_CB *mqtt)
  * @param Topic 主题字符串
  * @param data 数据指针
  */
-void MQTT_PublishDataQs1(char *Topic,char *data,uint16_t length,MQTT_CB *mqtt)
+void MQTT_PublishDataQs1(char *Topic,char *data,uint16_t length,MQTT_CB *mqtt,RingBuff_CB *rb)
 {
 	mqtt->Fixed_len = 1;                                                                                                        //CONNECT报文，固定报头长度暂定为1
 	mqtt->Variable_len = 2+strlen(Topic);                                                                                                    //CONNECT报文，可变报头长度=10
@@ -187,7 +187,7 @@ void MQTT_PublishDataQs1(char *Topic,char *data,uint16_t length,MQTT_CB *mqtt)
            	            
 	memcpy(&mqtt->Pack_buff[mqtt->Fixed_len+3+strlen(Topic)],data,length);
 	
-	Command_WriteCclbuf(mqtt->Pack_buff, mqtt->Fixed_len + mqtt->Variable_len + mqtt->Payload_len,&U2_TX_CB, u2_TxBuffer, U2_Tx_Size);
+	RingBuff_Write(rb,mqtt->Pack_buff, mqtt->Fixed_len + mqtt->Variable_len + mqtt->Payload_len);
 
 }
 
@@ -196,20 +196,20 @@ void MQTT_PublishDataQs1(char *Topic,char *data,uint16_t length,MQTT_CB *mqtt)
 /*参  数：无                                                */
 /*返回值：无                                                */
 /*----------------------------------------------------------*/
-void MQTT_PingREQ(void)
+void MQTT_PingREQ(RingBuff_CB *rb)
 {
 	uint8_t packbuf[2] = {0xC0,0x00};
-	Command_WriteCclbuf(packbuf,2,&U2_TX_CB, u2_TxBuffer, U2_Tx_Size); //发送PINGREQ报文
+	RingBuff_Write(rb,packbuf,2); //发送PINGREQ报文
 }
 
 
-void WiFi_PropertyPost(char * postdata,MQTT_CB *mqtt,IOT_InfoCB *iot_info)
+void WiFi_PropertyPost(char * postdata,MQTT_CB *mqtt,IOT_InfoCB *iot_info,RingBuff_CB *rb)
 {	
 	char topicdatabuff[64];       //用于构建发送topic的缓冲区
 
 	memset(topicdatabuff,0,64);                                                          //清空临时缓冲区	
 	sprintf(topicdatabuff,"$sys/%s/%s/thing/property/post",iot_info->IOT_ProductID,iot_info->IOT_ClientID); //构建发送topic					
-	MQTT_PublishDataQs0(topicdatabuff,postdata,strlen(postdata),mqtt);                            //等级1的PUBLISH报文，加入发送缓冲区   	
+	MQTT_PublishDataQs0(topicdatabuff,postdata,strlen(postdata),mqtt,rb);                            //等级1的PUBLISH报文，加入发送缓冲区   	
 }
 
 
